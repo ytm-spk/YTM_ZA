@@ -73,10 +73,34 @@ h4 .tag{display:inline-block;font-size:.72rem;font-weight:800;letter-spacing:.4p
 }
 /* === Compact overrides === */
 .wrap{ max-width:850px; }
-.header{ padding:8px 6px; }
-.header h2{ margin:0; }
-.header p{ margin:1px 0; }
-.header h3{ margin:3px 0 0 0; line-height:1.25; }
+.header{
+  background:linear-gradient(180deg,#eef4ff 0%, #f7f9ff 100%);
+  color:#0b3a7a;
+  text-align:center;
+  padding:12px 8px 10px;
+}
+
+.header h2{
+  margin:0;
+  font-size:1.18rem;
+  color:#0b3a7a;
+}
+
+.header p{
+  margin:2px 0;
+  font-size:.84rem;
+  color:#374151;
+}
+
+.header h3{
+  margin:6px auto 0;
+  max-width:90%;
+  font-size:.9rem;
+  line-height:1.35;
+  font-weight:500;
+  color:#1f2937;
+}
+
 .card{ padding:8px 12px; }
 .bolumkutu{ padding:6px 8px; margin-top:6px; }
 .bolumkutu h4{ margin:3px 0; }
@@ -119,6 +143,19 @@ textarea{ min-height:44px; }
 /* Bilgilendirme listesi için minik stil */
 .ek-list { margin: 6px 0 0 18px; padding: 0; }
 .ek-list li { margin: 2px 0; }
+
+/* Mail onay satırı */
+.mail-onay {
+  margin-top: 6px;
+  font-size: 0.85rem;
+}
+.mail-onay label{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin:0;
+  font-weight:400;
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
@@ -127,9 +164,7 @@ textarea{ min-height:44px; }
   <div id="print-area">
     <div class="header">
       <h2>YATIRIMCI TAZMİN MERKEZİ’NE</h2>
-      <p>(Formun eksiksiz doldurulması ve ıslak imzalı haliyle gönderilmesi zorunludur.)</p>
-      <h3>21 Nisan 2021 sonrası zamanaşımına uğrayan emanetlerin iadesi başvurusudur.</h3>
-      <h2 id="metinParam" style="margin-top:6px;font-size:1rem;font-weight:700;">
+       <h2 id="metinParam" style="margin-top:6px;font-size:1rem;font-weight:700;">
         21 Nisan 2021 tarihinden sonra zamanaşımına uğrayarak Merkezinize devredilen şahsıma/vekilime ait/miras yoluyla tarafıma intikal etmesi gereken emanetlerin iadesi hususunda gereğini arz ederim.
       </h2>
     </div>
@@ -152,7 +187,7 @@ textarea{ min-height:44px; }
           </div>
         </div>
 
-        <!-- Ek Belgeler (butonsuz bilgilendirme listesi burada görünecek) -->
+        <!-- Ek Belgeler -->
         <div id="ek-belgeler-alani" class="ek-belgeler" style="display:none;"></div>
 
         <div id="form-devami" style="display:none;">
@@ -251,6 +286,14 @@ textarea{ min-height:44px; }
             </div>
           </div>
 
+          <!-- ✅ Onay ve İmza bloğunun hemen altında mail onayı -->
+          <div class="mail-onay">
+            <label>
+              <input type="checkbox" id="chkMailOnay">
+              Başvuru sonucunun e-posta olarak bildirilmesini onaylıyorum
+            </label>
+          </div>
+
           <!-- Gönder + Beyan -->
           <div class="submit-row">
             <div class="submit-left">
@@ -306,6 +349,9 @@ reddinden YTM sorumlu tutulamaz.</p>
   const secHisse = $('sec-hisse');
   const secHesap = $('sec-hesap');
 
+  // 🔢 Mail onay için klik sayacı
+  let mailOnayClicks = 0;
+
   // Tarih set
   window.addEventListener('DOMContentLoaded', () => {
     const t = $('b_tarih');
@@ -318,7 +364,7 @@ reddinden YTM sorumlu tutulamaz.</p>
     document.querySelectorAll('.invalid-input').forEach(i=>i.classList.remove('invalid-input'));
   }
 
-  // Label metni bulma (uyarı için)
+  // Label metni bulma
   function labelOf(input){
     let lab=input.closest('.bolumkutu')?.querySelector(`label[for="${input.id}"]`);
     if(lab) return lab.textContent.trim();
@@ -372,11 +418,10 @@ reddinden YTM sorumlu tutulamaz.</p>
     hTckn?.removeEventListener('input', syncSelf);
   }
 
-  // İlişki değişiminde: BUTON YOK, SADECE LİSTE
+  // İlişki değişiminde
   function triggerRelationChange(){
     removeInvalid();
 
-    // Varsayılan gizle
     formDevami.style.display = "none";
     ekAlan.style.display = "none";
     ekAlan.innerHTML = "";
@@ -386,7 +431,6 @@ reddinden YTM sorumlu tutulamaz.</p>
 
     if (!yakinlik.value) return;
 
-    // Formu göster
     formDevami.style.display = "block";
     ekAlan.style.display = "block";
 
@@ -396,7 +440,7 @@ reddinden YTM sorumlu tutulamaz.</p>
       html += `
         <li><b>1-Kimlik fotokopisi (Zorunlu Ek)</li></b>
         <li>İade edilecek hesap numarasının hak sahibine ait olmalıdır.</li>
-		  <li>Müşterek hesap sahiplerinin birlikte başvurması zorunludur.</li>
+		<li>Müşterek hesap sahiplerinin birlikte başvurması zorunludur.</li>
       `;
       enableLink("https://www.turkiye.gov.tr/yatirimci-tazmin-merkezi-yatirim-kuruluslari-nezdinde-zamanasimina-ugramis-emanet-ve-alacaklari-sorgulama");
       addSelfSync();
@@ -435,7 +479,7 @@ reddinden YTM sorumlu tutulamaz.</p>
   // İlk bağlama
   yakinlik?.addEventListener('change', triggerRelationChange);
   window.addEventListener('DOMContentLoaded', () => {
-    triggerRelationChange();  // sayfa açılır açılmaz seçim durumuna göre kur
+    triggerRelationChange();
   });
 
   // ------------- Tek Sayfa PDF -------------
@@ -464,8 +508,16 @@ reddinden YTM sorumlu tutulamaz.</p>
   function closeModal(){ modal.style.display='none'; }
   btnCancel?.addEventListener('click', closeModal);
 
-  // Zorunlu alan kontrolü (file kontrolü yok)
+  // Zorunlu alan kontrolü
   btn?.addEventListener('click', ()=>{
+    // 🔢 Mail onay kontrolü – ilk 3 tıklamada zorunlu
+    mailOnayClicks++;
+    const chkMail = $('chkMailOnay');
+    if (chkMail && mailOnayClicks <= 3 && !chkMail.checked) {
+      alert("Başvuru sonucunun e-posta olarak bildirilmesini onaylamanız önemle tavsiye edilir.");
+      return;
+    }
+
     const t = $('b_tarih'); if(t) t.value = todayISO();
     const form = $('form'); removeInvalid();
 
@@ -512,7 +564,7 @@ reddinden YTM sorumlu tutulamaz.</p>
     openModal();
   });
 
-  // Onaylandı -> Sadece PDF indir
+  // Onaylandı -> PDF indir
   btnConfirm?.addEventListener('click', async ()=>{
     if(!chkOnay.checked){ alert("Devam etmek için onay kutusunu işaretleyiniz."); return; }
     closeModal();
@@ -530,10 +582,10 @@ reddinden YTM sorumlu tutulamaz.</p>
 })();
 </script>
 
-<!-- (Opsiyonel) TEST MODU: Formu örnek verilerle doldurur -->
+<!-- (Opsiyonel) TEST MODU -->
 <script>
 (function(){
-  const TEST_MODE = false; // gerekirse true yapın
+  const TEST_MODE = true;
   if (!TEST_MODE) return;
   window.addEventListener('DOMContentLoaded', () => {
     const by = (id) => document.getElementById(id);
@@ -566,35 +618,24 @@ reddinden YTM sorumlu tutulamaz.</p>
 <script>
 (function(){
   const placeholders = {
-    // Hesap
     h_adsoyad: "Hesap sahibinin adı soyadı (Örn: Ahmet Yılmaz)",
     h_tckn: "11 haneli TCKN (Örn: 12345678901)",
     h_hesapno: "Örn: HS123456 veya 12345678",
     cinsi_nakit: "Örn: TL - 1.500,00",
     fon_miktar: "Örn: XYZ Fonu - 100 Adet",
     hisse_miktar: "Örn: ABC Holding - 200 Lot",
-
-    // Başvuran
     b_adsoyad: "Başvuranın adı soyadı",
     b_tckn: "11 haneli TCKN",
     b_eposta: "ornek@eposta.com",
     b_adres: "İl/ilçe, mahalle, cadde, kapı no...",
-
-    // Nakit
     n_iban: "TR ile başlayan 26 karakter (Örn: TR12 0006 2000 0000 0012 3456 789)",
     n_adsoyad: "IBAN sahibi adı soyadı",
-
-    // Fon
     fon_banka: "Örn: Ziraat Yatırım",
     fon_hesap: "Yatırım hesap numarası (Örn: FON-987654)",
     fon_adsoyad: "Hesap sahibi adı soyadı",
-
-    // Hisse
     hisse_banka: "Örn: Garanti Yatırım",
     hisse_hesap: "Yatırım hesap numarası (Örn: HIS-123456)",
     hisse_adsoyad: "Hesap sahibi adı soyadı",
-
-    // İmza
     imza_adsoyad: "Islak imzada görünecek ad soyad"
   };
 
@@ -609,7 +650,3 @@ reddinden YTM sorumlu tutulamaz.</p>
 </script>
 </body>
 </html>
-
-
-
-
