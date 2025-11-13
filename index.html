@@ -253,20 +253,32 @@ textarea{ min-height:44px; }
           </div>
 
           <!-- Fon + Hisse -->
-          <div class="dual-section">
-            <div class="bolumkutu fon" id="sec-fon">
-              <h4><span class="tag">FON</span>Yatırım Fonu İadesinin Yapılacağı Hesap Bilgileri</h4>
-              <label>Banka/Aracı Kurum Adı</label><input type="text" id="fon_banka">
-              <label>Yatırım Hesap No</label><input type="text" id="fon_hesap">
-              <label>Hesap Sahibi Ad Soyad</label><input type="text" id="fon_adsoyad">
-            </div>
-            <div class="bolumkutu hisse" id="sec-hisse">
-              <h4><span class="tag">HİSSE</span> Hisse  Senedi İadesinin Yapılacağı Hesap Bilgileri</h4>
-              <label>Aracı Kurum Adı</label><input type="text" id="hisse_banka">
-              <label>Yatırım Hesap No</label><input type="text" id="hisse_hesap">
-              <label>Hesap Sahibi Ad Soyad</label><input type="text" id="hisse_adsoyad">
-            </div>
-          </div>
+          <h4 style="margin-top:12px;"><span class="tag">HESAPLAR</span> İadenin Yapılacağı Hesap Bilgileri</h4>
+
+<div class="dual-section">
+    <div class="bolumkutu fon" id="sec-fon">
+        <label>Yatırım Fonu – Banka/Aracı Kurum Adı</label>
+        <input type="text" id="fon_banka">
+
+        <label>Yatırım Fonu – Hesap No</label>
+        <input type="text" id="fon_hesap">
+
+        <label>Yatırım Fonu – Hesap Sahibi Ad Soyad</label>
+        <input type="text" id="fon_adsoyad">
+    </div>
+
+    <div class="bolumkutu hisse" id="sec-hisse">
+        <label>Hisse Senedi – Aracı Kurum Adı</label>
+        <input type="text" id="hisse_banka">
+
+        <label>Hisse Senedi – Hesap No</label>
+        <input type="text" id="hisse_hesap">
+
+        <label>Hisse Senedi – Hesap Sahibi Ad Soyad</label>
+        <input type="text" id="hisse_adsoyad">
+    </div>
+</div>
+
 
           <!-- Onay ve İmza -->
           <div class="bolumkutu imza" id="sec-imza">
@@ -650,3 +662,4 @@ reddinden YTM sorumlu tutulamaz.</p>
 </script>
 </body>
 </html>
+
