@@ -6,8 +6,7 @@
 <title>YTM Başvuru Formu — Tek Sayfa PDF</title>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-<!-- ✅ XLSX için SheetJS -->
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
 <style>
 :root{
   --blue-dark:#003366; --ink:#0f172a; --muted:#6b7280; --line:#d8dee9;
@@ -157,7 +156,6 @@ textarea{ min-height:44px; }
   font-weight:400;
 }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -180,6 +178,7 @@ textarea{ min-height:44px; }
               <option value="kendisi">Kendisi</option>
               <option value="vekili">Vekili</option>
               <option value="mirasci">Mirasçısı</option>
+              <option value="tuzel">Tüzel Kişi Yetkilisi</option>
             </select>
           </div>
           <div class="rel-right">
@@ -255,30 +254,29 @@ textarea{ min-height:44px; }
           <!-- Fon + Hisse -->
           <h4 style="margin-top:12px;"><span class="tag">HESAPLAR</span> İadenin Yapılacağı Hesap Bilgileri</h4>
 
-<div class="dual-section">
-    <div class="bolumkutu fon" id="sec-fon">
-        <label>Yatırım Fonu – Banka/Aracı Kurum Adı</label>
-        <input type="text" id="fon_banka">
+          <div class="dual-section">
+            <div class="bolumkutu fon" id="sec-fon">
+                <label>Yatırım Fonu – Banka/Aracı Kurum Adı</label>
+                <input type="text" id="fon_banka">
 
-        <label>Yatırım Fonu – Hesap No</label>
-        <input type="text" id="fon_hesap">
+                <label>Yatırım Fonu – Hesap No</label>
+                <input type="text" id="fon_hesap">
 
-        <label>Yatırım Fonu – Hesap Sahibi Ad Soyad</label>
-        <input type="text" id="fon_adsoyad">
-    </div>
+                <label>Yatırım Fonu – Hesap Sahibi Ad Soyad</label>
+                <input type="text" id="fon_adsoyad">
+            </div>
 
-    <div class="bolumkutu hisse" id="sec-hisse">
-        <label>Hisse Senedi – Aracı Kurum Adı</label>
-        <input type="text" id="hisse_banka">
+            <div class="bolumkutu hisse" id="sec-hisse">
+                <label>Hisse Senedi – Aracı Kurum Adı</label>
+                <input type="text" id="hisse_banka">
 
-        <label>Hisse Senedi – Hesap No</label>
-        <input type="text" id="hisse_hesap">
+                <label>Hisse Senedi – Hesap No</label>
+                <input type="text" id="hisse_hesap">
 
-        <label>Hisse Senedi – Hesap Sahibi Ad Soyad</label>
-        <input type="text" id="hisse_adsoyad">
-    </div>
-</div>
-
+                <label>Hisse Senedi – Hesap Sahibi Ad Soyad</label>
+                <input type="text" id="hisse_adsoyad">
+            </div>
+          </div>
 
           <!-- Onay ve İmza -->
           <div class="bolumkutu imza" id="sec-imza">
@@ -344,7 +342,7 @@ reddinden YTM sorumlu tutulamaz.</p>
 
 <script>
 (function(){
-  // ============ Yardımcılar ============
+  // ============ Yardımcılar ============  
   const $ = (id) => document.getElementById(id);
   const todayISO = () => new Date().toISOString().slice(0,10);
 
@@ -388,6 +386,32 @@ reddinden YTM sorumlu tutulamaz.</p>
   function enableLink(url){ btnSorgu.href=url; btnSorgu.classList.remove('disabled'); }
   function disableLink(){ btnSorgu.href="#"; btnSorgu.classList.add('disabled'); }
 
+  // Hesap bölümündeki label ve TCKN/VKN ayarı
+  function updateAccountLabels(){
+    if (!hAd || !hTckn) return;
+    const labAd = hAd.previousElementSibling;
+    const labId = hTckn.previousElementSibling;
+    if (!labAd || !labId) return;
+
+    if (yakinlik.value === 'tuzel') {
+      labAd.textContent = 'Tüzel Kişi Ünvanı *';
+      labId.textContent = 'VKN *';
+      hTckn.setAttribute('maxlength','10');
+      hTckn.setAttribute('pattern','^[0-9]{10}$');
+      hTckn.setAttribute('inputmode','numeric');
+      hAd.placeholder  = 'Tüzel kişinin ticaret unvanı (Örn: ABC A.Ş.)';
+      hTckn.placeholder = '10 haneli VKN';
+    } else {
+      labAd.textContent = 'Adı Soyadı *';
+      labId.textContent = 'TCKN *';
+      hTckn.setAttribute('maxlength','11');
+      hTckn.setAttribute('pattern','^[0-9]{11}$');
+      hTckn.setAttribute('inputmode','numeric');
+      hAd.placeholder  = 'Hesap sahibinin adı soyadı (Örn: Ahmet Yılmaz)';
+      hTckn.placeholder = '11 haneli TCKN (Örn: 12345678901)';
+    }
+  }
+
   // Üst başlığı ilişkiye göre değiştir
   function setHeaderByRel(){
     const metin = $('metinParam');
@@ -400,6 +424,9 @@ reddinden YTM sorumlu tutulamaz.</p>
         break;
       case "mirasci":
         metin.textContent = "21 Nisan 2021 tarihinden sonra zamanaşımına uğrayarak Merkezinize devredilen miras yoluyla tarafıma intikal etmesi gereken emanetlerin iadesi hususunda gereğini arz ederim.";
+        break;
+      case "tuzel":
+        metin.textContent = "21 Nisan 2021 tarihinden sonra zamanaşımına uğrayarak Merkezinize devredilen temsilcisi olduğum tüzel kişiye ait emanetlerin iadesi hususunda gereğini arz ederim.";
         break;
       default:
         metin.textContent = "21 Nisan 2021 tarihinden sonra zamanaşımına uğrayarak Merkezinize devredilen şahsıma/vekilime ait/miras yoluyla tarafıma intikal etmesi gereken emanetlerin iadesi hususunda gereğini arz ederim.";
@@ -440,6 +467,7 @@ reddinden YTM sorumlu tutulamaz.</p>
     disableLink();
     removeSelfSync();
     setHeaderByRel();
+    updateAccountLabels();
 
     if (!yakinlik.value) return;
 
@@ -450,27 +478,28 @@ reddinden YTM sorumlu tutulamaz.</p>
 
     if (yakinlik.value === "kendisi") {
       html += `
-        <li><b>1-Kimlik fotokopisi (Zorunlu Ek)</li></b>
+        <li><b>1- Kimlik fotokopisi (Zorunlu Ek)</b></li>
         <li>İade edilecek hesap numarasının hak sahibine ait olmalıdır.</li>
-		<li>Müşterek hesap sahiplerinin birlikte başvurması zorunludur.</li>
+        <li>Müşterek hesap sahiplerinin birlikte başvurması zorunludur.</li>
       `;
       enableLink("https://www.turkiye.gov.tr/yatirimci-tazmin-merkezi-yatirim-kuruluslari-nezdinde-zamanasimina-ugramis-emanet-ve-alacaklari-sorgulama");
       addSelfSync();
 
     } else if (yakinlik.value === "vekili") {
       html += `
-        <li><b>1-Kimlik fotokopisi (Zorunlu Ek)</li></b>
-        <li><b>2-Vekaletname (Zorunlu Ek)</b></li>
+        <li><b>1- Kimlik fotokopisi (Zorunlu Ek)</b></li>
+        <li><b>2- Vekaletname (Zorunlu Ek)</b></li>
         <li>İade edilecek hesabın hak sahibine veya vekile ait olmalıdır.</li>
       `;
       enableLink("https://www.turkiye.gov.tr/yatirimci-tazmin-merkezi-yatirim-kuruluslari-nezdinde-zamanasimina-ugramis-emanet-ve-alacaklari-sorgulama");
 
     } else if (yakinlik.value === "mirasci") {
       html += `
-        <li><b>1-Kimlik fotokopisi (Zorunlu Ek)</li></b>
-        <li><b>2-Mirasçılık belgesi (Zorunlu Ek)</li></b>
-        <li><b>3-Veraset ve İntikal Vergisi ödendiğine dair yazı (Zorunlu Ek)</li></b>
-		<li>Veraset halinde başvurunun tüm varisler (veya vekilleri) tarafından yapılması gerekir.</li>
+        <li><b>1- Kimlik fotokopisi (Zorunlu Ek)</b></li>
+        <li><b>2- Mirasçılık belgesi (Zorunlu Ek)</b></li>
+        <li><b>3- Veraset ve İntikal Vergisi ödendiğine dair yazı (Zorunlu Ek)</b></li>
+        <li><b>4- Vekaletname (Vekil aracılığı ile yapılan başvurular için) (Zorunlu Ek)</b></li>
+        <li>Veraset halinde başvurunun tüm varisler (veya vekilleri) tarafından yapılması gerekir.</li>
         <li>Hisse/fon iadesinde, bölünemeyen kıymetler için tek veya müşterek yatırım hesabı bilgisi verilmesi tavsiye edilmektedir.</li>
       `;
       html += `</ul>
@@ -480,12 +509,21 @@ reddinden YTM sorumlu tutulamaz.</p>
         </label>
       `;
       enableLink("https://www.turkiye.gov.tr/yatirimci-tazmin-merkezi-yatirim-kuruluslari-nezdinde-zamanasimina-ugramis-emanet-ve-alacaklari-sorgulama-mirascisi-oldugunuz-kisi-adina");
+
+    } else if (yakinlik.value === "tuzel") {
+      html += `
+        <li><b>1- Tüzel kişiyi temsile yetkili kişinin kimlik fotokopisi (Zorunlu Ek)</b></li>
+        <li><b>2- Tüzel kişinin güncel imza sirküleri / yetki belgesi (Zorunlu Ek)</b></li>
+        <li>İade edilecek hesabın tüzel kişiye ait olması ve yetkilinin imza sirkülerinde yer alması gerekir.</li>
+      `;
+      enableLink("https://www.turkiye.gov.tr/yatirimci-tazmin-merkezi-yatirim-kuruluslari-nezdinde-zamanasimina-ugramis-emanet-ve-alacaklari-sorgulama-tuzel-kisi");
     }
 
     if (!html.endsWith('</ul>')) html += '</ul>';
     ekAlan.innerHTML = html;
 
     setHeaderByRel();
+    updateAccountLabels();
   }
 
   // İlk bağlama
@@ -594,10 +632,10 @@ reddinden YTM sorumlu tutulamaz.</p>
 })();
 </script>
 
-<!-- (Opsiyonel) TEST MODU -->
+<!-- TEST MODU (kapalı) -->
 <script>
 (function(){
-  const TEST_MODE = true;
+  const TEST_MODE = false; // Geliştirme sırasında true yapabilirsiniz.
   if (!TEST_MODE) return;
   window.addEventListener('DOMContentLoaded', () => {
     const by = (id) => document.getElementById(id);
@@ -654,12 +692,13 @@ reddinden YTM sorumlu tutulamaz.</p>
   window.addEventListener('DOMContentLoaded', () => {
     Object.entries(placeholders).forEach(([id, text]) => {
       const el = document.getElementById(id);
-      if (el && el.placeholder === "") el.placeholder = text;
-      if (el && typeof el.placeholder === "undefined") el.setAttribute("placeholder", text);
+      if (!el) return;
+      if (typeof el.placeholder === "undefined" || el.placeholder === "") {
+        el.setAttribute("placeholder", text);
+      }
     });
   });
 })();
 </script>
 </body>
 </html>
-
